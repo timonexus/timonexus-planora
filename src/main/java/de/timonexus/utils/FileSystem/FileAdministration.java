@@ -2,6 +2,8 @@ package de.timonexus.utils.FileSystem;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 
 public class FileAdministration {
     
@@ -35,6 +37,50 @@ public class FileAdministration {
 
     private void initializePath(){
         this.path = Path.of(this.directory.getDirectoryPath()).resolve(this.fileName);
+    }
+    public ArrayList<String> read(){
+        ArrayList<String> content = new ArrayList<>();
+
+        try {
+            for(String line : Files.readAllLines(path)){
+                content.add(line);
+            }
+        } catch (Exception e) {
+            return content;
+        }
+
+        return content;
+    }
+    public boolean write(String n_Text){
+        try {
+            Files.writeString(path, n_Text);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public boolean write(ArrayList<String> n_Content) {
+        try {
+            Files.write(path, n_Content);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public boolean append(String n_Text){
+        try {
+            Files.writeString(path, n_Text + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public boolean append(ArrayList<String> n_Content){
+        for(String line : n_Content){
+            if(!this.append(line)) return false;
+        }
+
+        return true;
     }
 
     // getter
