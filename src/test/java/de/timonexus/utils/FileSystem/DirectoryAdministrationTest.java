@@ -77,18 +77,108 @@ public class DirectoryAdministrationTest {
     }
 
     @Test 
-    void shouldListMultipleFiles() throws IOException{
+    void shouldListFiles() throws IOException{
+        Files.createFile(tempDir.resolve("Test.txt"));
+        DirectoryAdministration directoryAdministration = new DirectoryAdministration(tempDir.toString());
+
+        ArrayList<Path> files = directoryAdministration.listFiles();
+
+        assertEquals(1, files.size());
+        assertTrue(files.contains(tempDir.resolve("Test.txt")));
+    }
+
+    @Test 
+    void shouldListJustFiles() throws IOException{
         Files.createFile(tempDir.resolve("Test.txt"));
         Files.createFile(tempDir.resolve("Image.png"));
         Files.createFile(tempDir.resolve("Data.json"));
 
         DirectoryAdministration directoryAdministration = new DirectoryAdministration(tempDir.toString());
-        ArrayList<Path> files = directoryAdministration.listAllFiles();
+        ArrayList<Path> files = directoryAdministration.listFiles();
 
         assertEquals(3, files.size());
         assertTrue(files.contains(tempDir.resolve("Test.txt")));
         assertTrue(files.contains(tempDir.resolve("Image.png")));
         assertTrue(files.contains(tempDir.resolve("Data.json")));
+    }
+
+
+    @Test 
+    void shouldListMultipleFiles() throws IOException{
+        Files.createFile(tempDir.resolve("Test.txt"));
+        Files.createFile(tempDir.resolve("Image.png"));
+        Files.createFile(tempDir.resolve("Data.json"));
+        Files.createDirectories(tempDir.resolve("test"));
+
+        DirectoryAdministration directoryAdministration = new DirectoryAdministration(tempDir.toString());
+        ArrayList<Path> files = directoryAdministration.listAllFiles();
+
+        assertEquals(4, files.size());
+        assertTrue(files.contains(tempDir.resolve("Test.txt")));
+        assertTrue(files.contains(tempDir.resolve("Image.png")));
+        assertTrue(files.contains(tempDir.resolve("Data.json")));
+        assertTrue(files.contains(tempDir.resolve("test")));
+    }
+
+    @Test
+    void shouldListAllFilesRecursively() throws IOException {
+        Path subdirectory = Files.createDirectory(tempDir.resolve("test"));
+
+        Files.createFile(tempDir.resolve("Test.txt"));
+        Files.createFile(tempDir.resolve("Image.png"));
+        Files.createFile(subdirectory.resolve("s_Image.png"));
+        Files.createFile(subdirectory.resolve("s_Data.json"));
+
+        DirectoryAdministration directory =
+                new DirectoryAdministration(tempDir.toString());
+
+        ArrayList<Path> files = directory.listAllFilesRecursively();
+
+        assertEquals(4, files.size());
+        assertTrue(files.contains(tempDir.resolve("Test.txt")));
+        assertTrue(files.contains(tempDir.resolve("Image.png")));
+        assertTrue(files.contains(subdirectory.resolve("s_Image.png")));
+        assertTrue(files.contains(subdirectory.resolve("s_Data.json")));
+    }
+
+    @Test
+    void shouldListFilesInNestedSubdirectories() throws IOException {
+        Path nestedDirectory =
+                Files.createDirectories(tempDir.resolve("test/images"));
+
+        Files.createFile(nestedDirectory.resolve("Image.png"));
+
+        DirectoryAdministration directory =
+                new DirectoryAdministration(tempDir.toString());
+
+        ArrayList<Path> files = directory.listAllFilesRecursively();
+
+        assertEquals(1, files.size());
+        assertTrue(files.contains(nestedDirectory.resolve("Image.png")));
+    }
+
+    @Test
+    void shouldReturnEmptyListIfDirectoryIsEmptyRecursively() {
+        DirectoryAdministration directory =
+                new DirectoryAdministration(tempDir.toString());
+
+        ArrayList<Path> files = directory.listAllFilesRecursively();
+
+        assertNotNull(files);
+        assertTrue(files.isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyListIfDirectoryDoesNotExistRecurively() {
+        DirectoryAdministration directory =
+                new DirectoryAdministration(
+                        tempDir.resolve("missing").toString()
+                );
+
+        ArrayList<Path> files = directory.listAllFilesRecursively();
+
+        assertNotNull(files);
+        assertTrue(files.isEmpty());
     }
 
     @Test 
@@ -107,5 +197,14 @@ public class DirectoryAdministrationTest {
 
         assertNotNull(files);
         assertTrue(files.isEmpty());
+    }
+
+    @Test 
+    void shouldReturnTrueIfDirectoryExists(){
+        DirectoryAdministration directoryAdministration = new DirectoryAdministration(tempDir.resolve("missing").toString());
+        assertFalse(directoryAdministration.exists());
+
+        directoryAdministration.createDirectoryIfNotExists();
+        assertTrue(directoryAdministration.exists());
     }
 }
