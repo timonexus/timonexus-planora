@@ -2,11 +2,13 @@ package de.timonexus.utils.FileSystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -61,5 +63,49 @@ public class DirectoryAdministrationTest {
                 );
 
         assertFalse(directory.createDirectoryIfNotExists());
+    }
+
+    @Test 
+    void shouldListAllFiles() throws IOException{
+        Files.createFile(tempDir.resolve("Test.txt"));
+        DirectoryAdministration directoryAdministration = new DirectoryAdministration(tempDir.toString());
+
+        ArrayList<Path> files = directoryAdministration.listAllFiles();
+
+        assertEquals(1, files.size());
+        assertTrue(files.contains(tempDir.resolve("Test.txt")));
+    }
+
+    @Test 
+    void shouldListMultipleFiles() throws IOException{
+        Files.createFile(tempDir.resolve("Test.txt"));
+        Files.createFile(tempDir.resolve("Image.png"));
+        Files.createFile(tempDir.resolve("Data.json"));
+
+        DirectoryAdministration directoryAdministration = new DirectoryAdministration(tempDir.toString());
+        ArrayList<Path> files = directoryAdministration.listAllFiles();
+
+        assertEquals(3, files.size());
+        assertTrue(files.contains(tempDir.resolve("Test.txt")));
+        assertTrue(files.contains(tempDir.resolve("Image.png")));
+        assertTrue(files.contains(tempDir.resolve("Data.json")));
+    }
+
+    @Test 
+    void shouldReturnEmptyListIfDirectoryIsEmpty(){
+        DirectoryAdministration directoryAdministration = new DirectoryAdministration(tempDir.toString());
+        ArrayList<Path> files = directoryAdministration.listAllFiles();
+
+        assertNotNull(files);
+        assertTrue(files.isEmpty());
+    }
+
+    @Test 
+    void shouldReturnEmptyListIfDirectoryDoesNotExist(){
+        DirectoryAdministration directoryAdministration = new DirectoryAdministration(tempDir.resolve("missing").toString());
+        ArrayList<Path> files = directoryAdministration.listAllFiles();
+
+        assertNotNull(files);
+        assertTrue(files.isEmpty());
     }
 }
